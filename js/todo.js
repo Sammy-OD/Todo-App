@@ -76,6 +76,7 @@ window.onload = () => {
                 const span = document.createElement('span');
 
                 checkBox.type = "checkbox";
+                checkBox.onchange = toggleComplete;
                 deleteBtn.className = "btn";
                 deleteBtn.innerText = "X";
                 deleteBtn.onclick = delTodo;
@@ -88,6 +89,8 @@ window.onload = () => {
                 span.innerText = ' ' + cursor.value.title;
 
                 todoItem.setAttribute('data-todo-id', cursor.value.id);
+
+                cursor.value.completed ? checkBox.checked = true : checkBox.checked = false;
 
                 cursor.continue();
             } else {
@@ -118,6 +121,31 @@ window.onload = () => {
                 div.id = 'msg';
                 todos.appendChild(div);
                 info.style.display = 'none';
+            }
+        }
+    }
+
+    function toggleComplete(e) {
+        let objectStore = db.transaction(['todo_os'], 'readwrite').objectStore('todo_os');
+        let todoId = Number(e.target.parentNode.getAttribute('data-todo-id'));
+
+        let request = objectStore.get(todoId);
+
+        request.onerror = () => {
+            console.log('Error retrieving data');
+        }
+
+        request.onsuccess = (e) => {
+            let data = e.target.result
+            data.completed = !data.completed;
+
+            let dataUpdate = objectStore.put(data);
+            dataUpdate.onerror = () => {
+                console.log('Error updating data');
+            }
+
+            dataUpdate.onsuccess = () => {
+                console.log('Data update sucessful');
             }
         }
     }
